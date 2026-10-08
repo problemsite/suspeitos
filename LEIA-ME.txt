@@ -1,0 +1,69 @@
+SUSPEITOS — protótipo jogável (Caso 1: "Noite na Mansão")
+=========================================================
+
+COMO TESTAR NO PC
+-----------------
+Aberto direto do PC, o jogo roda em MODO LOCAL:
+1. Abra o index.html (de preferência por um servidorzinho local, ex.: extensão
+   "Live Server" do VS Code, ou "python -m http.server" na pasta).
+2. Abra DUAS ABAS do mesmo navegador. Cada aba é um jogador.
+3. Numa aba clique em "SOU PROBLEMS", na outra "SOU XINGLAU" → COMEÇAR INVESTIGAÇÃO.
+   ("testar sozinho" no rodapé põe você nos dois personagens.)
+
+ONLINE (GitHub + Firebase único "jogos-github")
+-----------------------------------------------
+- Repositório: suspeitos  →  problemsite.github.io/suspeitos/
+- O index.html já carrega /trava.js (a mesma trava dos outros jogos).
+  O jogo só abre quando estiver liberado na Central (+ senha dos jogadores, se tiver).
+- Os dados ficam em sites/suspeitos/sala (estado, cursores, online).
+- Quando o navegador da equipe abre o jogo, ele mesmo cadastra a pasta "sala"
+  na Central. As regras do Firebase não mudam (a regra de sites/ já cobre).
+- Toda jogada passa por uma transação no Firebase, então os dois podem clicar
+  ao mesmo tempo sem bagunçar a partida.
+
+PAINEL ADM  →  /suspeitos/ADM/
+-----------------------------
+Só abre para administradores (login pela Central). Tem:
+- Resetar partida / recomeçar mantendo jogadores / liberar as vagas.
+- Pular para qualquer capítulo (para testar sem jogar tudo).
+
+CONTROLES
+---------
+Clique em qualquer lugar (ou Espaço/Enter): passa a fala.
+"↶ voltar" na caixa de diálogo (ou ← / Backspace): volta uma fala.
+P: pistas.  M: som.
+Os dois têm cursor (cada um vê o do outro). Diálogo, cenário e progresso são
+compartilhados; qualquer um pode passar a fala ou clicar num objeto.
+Na ACUSAÇÃO, os dois precisam escolher a mesma resposta.
+
+ONDE MEXER (tudo separado do código de tela)
+--------------------------------------------
+js/config.js                 configurações gerais (cores dos jogadores, velocidade do texto, volume)
+js/dados/personagens.js      personagens, cores, ROSTOS (PNG por expressão)
+js/dados/pistas.js           pistas (nome, descrição, PNG) e quais pares dá pra "ligar"
+js/dados/cenarios.js         3 ambientes, fundo (PNG/JPG) e objetos clicáveis (posição em %)
+js/dados/roteiro.js          TODAS as falas, conversas, gatilhos, dedução e reconstrução
+js/dados/isca.js             a tentativa de fotografar o vulto no escuro
+js/dados/tutorial.js         as dicas rápidas (texto e quando aparecem)
+js/audio.js                  sons (dá pra trocar por mp3 em ARQUIVOS)
+CASO.md                      a história completa, linha do tempo e lógica das pistas
+
+TROCAR ASSETS
+-------------
+- As imagens do jogo estão em .webp (bem mais leves que PNG). Pode trocar por PNG ou WebP,
+  é só ajustar o caminho no arquivo de dados correspondente.
+- SUBIR NO GITHUB: use a pasta "Suspeitos_GitHub" (só o que o jogo usa, ~10 MB). O upload pelo
+  site do GitHub aceita no máximo 100 arquivos por vez e ignora o .gitignore.
+- Rosto:   personagens.js →  rosto: { neutro: "img/personagens/giuliana_neutro.png", feliz: "...", preocupado: "...", assustado: "...", bravo: "..." }
+           (falta alguma expressão? usa a neutro. Sem PNG? desenha o placeholder.)
+           Corpo do Jazzghost: jazzghost_morto.png (olhos fechados) em img/personagens/ é usado sozinho.
+- Cenário: cenarios.js →  fundo: "img/cenarios/sala.jpg"   (16:9)
+- Objeto:  cenarios.js →  img: "img/objetos/celular.png"   (e x/y/w/h em % da tela)
+- Pista:   pistas.js →  img: "img/objetos/chaveiro.png"
+- O corpo é desenhado pelo jogo (moletom da collab com a cor de cada um) e tem
+  poses: neutro, cruzados, cintura, cabeca, coca, alto, apontar, celular,
+  escondendo, pote, escrevendo. Os personagens andam e fazem gestos sozinhos.
+
+FACECAM
+-------
+Os cantos de cima ficam livres. Diálogo, botões e pistas ficam embaixo/no centro.

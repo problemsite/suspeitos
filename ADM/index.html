@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%2300e8e8'/%3E%3Cpath d='M50 30 88 52v60H12V52Z' fill='%23fff' stroke='%23000' stroke-width='5' stroke-linejoin='round'/%3E%3Cpath d='M50 48 43 57M63 55l-6 9M29 66l-1 8' stroke='%23000' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suspeitos · ADM</title>
+<!-- ADM: só abre para administradores (login pela Central) -->
+<script src="/trava.js" data-site="suspeitos" data-modo="adm"></script>
+<style>
+  body { margin: 0; min-height: 100vh; background: #0b0915; color: #f1eefb; font: 600 15px/1.5 system-ui, "Nunito", sans-serif; display: grid; place-items: start center; padding: 32px 16px; }
+  main { width: min(760px, 100%); display: grid; gap: 16px; }
+  h1 { margin: 0; font: 700 32px "Oswald", system-ui; letter-spacing: 4px; }
+  h1 small { font-size: 14px; letter-spacing: 1px; color: #a49fbd; }
+  section { background: #14111f; border: 1px solid #ffffff1a; border-radius: 14px; padding: 16px 18px; }
+  h2 { margin: 0 0 10px; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: #a49fbd; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .kv b { display: block; font-size: 22px; }
+  .kv span { color: #a49fbd; font-size: 12px; }
+  button { background: #241e3e; color: #fff; border: 1px solid #ffffff2a; border-radius: 10px; padding: 10px 12px; font: 800 14px system-ui; cursor: pointer; }
+  button:hover { background: #2f2752; }
+  button.perigo { background: #5a1620; border-color: #ff4d5e66; }
+  .on { color: #6dff9c; } .off { color: #ff8a8a; }
+  #msg { min-height: 20px; color: #f4c95d; }
+</style>
+</head>
+<body>
+<main>
+  <h1>SUSPEITOS <small>painel ADM</small></h1>
+  <section><h2>Partida agora</h2><div class="grid" id="info"></div></section>
+  <section><h2>Jogadores</h2><div id="jog"></div></section>
+  <section>
+    <h2>Controle</h2>
+    <div class="grid">
+      <button class="perigo" data-a="reset">Resetar partida</button>
+      <button data-a="resetMantem">Recomeçar (mantém jogadores)</button>
+      <button data-a="liberarVagas">Liberar as vagas</button>
+    </div>
+  </section>
+  <section>
+    <h2>Pular para (testes)</h2>
+    <div class="grid">
+      <button data-cap="intro">Intro</button>
+      <button data-cap="inv1">Investigação 1</button>
+      <button data-cap="inv2">Depois do Mel</button>
+      <button data-cap="plano">Plano da isca</button>
+      <button data-cap="isca">Isca no escuro</button>
+      <button data-cap="pos">Depois da isca</button>
+      <button data-cap="deducao">Acusação</button>
+    </div>
+  </section>
+  <div id="msg"></div>
+</main>
+<script src="../js/config.js"></script>
+<script src="../js/dados/personagens.js"></script>
+<script src="../js/dados/pistas.js"></script>
+<script src="../js/dados/cenarios.js"></script>
+<script src="../js/dados/roteiro.js"></script>
+<script src="../js/dados/isca.js"></script>
+<script src="../js/motor.js"></script>
+<script src="../js/rede.js"></script>
+<script>
+(async function () {
+  const $ = (s) => document.querySelector(s);
+  const NOMES = { lobby: "Lobby", intro: "Introdução", inv1: "Investigação 1", obs1: "Seguindo o Mel", inv2: "Investigação 2",
+    obs2: "Seguindo a Bruna", plano: "Plano da isca", isca: "Isca no escuro", pos: "Depois da isca", deducao: "Acusação", revelacao: "Reconstrução" };
+  await Rede.iniciar();
+  const msg = (t) => { $("#msg").textContent = t; setTimeout(() => ($("#msg").textContent = ""), 2500); };
+  function render(S) {
+    const min = S.stats.inicio ? Math.floor((Rede.agora() - S.stats.inicio) / 60000) : 0;
+    $("#info").innerHTML = [
+      ["modo", Rede.modo === "firebase" ? "online" : "local"], ["fase", S.fase], ["capítulo", NOMES[S.capitulo] || S.capitulo],
+      ["sala", S.sala], ["pistas", Object.keys(S.pistas).length + "/" + ORDEM_PISTAS.length],
+      ["tempo", S.fase === "jogo" ? min + " min" : "—"], ["sequência", S.seq ? S.seq.id + " #" + S.seq.i : "livre"]
+    ].map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`).join("");
+    $("#jog").innerHTML = CONFIG.jogaveis.map((sl) => {
+      const j = S.jogadores[sl];
+      return `<div>${PERSONAGENS[sl].nome}: ${j ? j.nome + ` <span class="${Rede.estaOnline(j.id) ? "on" : "off"}">● ${Rede.estaOnline(j.id) ? "conectado" : "desconectado"}</span>` : "<span class='off'>vaga livre</span>"}</div>`;
+    }).join("");
+  }
+  Rede.onEstado(render);
+  Rede.onOnline(() => Rede.estado && render(Rede.estado));
+  setInterval(() => Rede.estado && render(Rede.estado), 5000);
+  document.querySelectorAll("[data-a]").forEach((b) => (b.onclick = async () => {
+    const a = b.dataset.a;
+    if (a === "reset" && !confirm("Resetar tudo? Os dois jogadores voltam pro lobby.")) return;
+    if (a === "reset") await Rede.acao({ t: "reset" });
+    if (a === "resetMantem") await Rede.acao({ t: "reset", manterJogadores: true });
+    if (a === "liberarVagas") await Rede.acao({ t: "liberarVagas" });
+    msg("feito.");
+  }));
+  document.querySelectorAll("[data-cap]").forEach((b) => (b.onclick = async () => {
+    await Rede.acao({ t: "pular", cap: b.dataset.cap }); msg("pulou para: " + b.textContent);
+  }));
+})();
+</script>
+</body>
+</html>

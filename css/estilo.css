@@ -1,0 +1,446 @@
+/* =====================================================================
+   SUSPEITOS — estilo
+   Tudo é medido em cqw (% da largura do palco), então a tela escala
+   inteira em qualquer resolução, sempre em 16:9.
+   ===================================================================== */
+:root {
+  --ouro: #f4c95d; --azul: #36e0ff; --laranja: #ffb02e; --vermelho: #ff4d5e;
+  --painel: rgba(10, 9, 20, .9); --borda: rgba(255, 255, 255, .13);
+  --txt: #f1eefb; --apagado: #a49fbd;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+body { display: grid; place-items: center; font-family: "Nunito", system-ui, sans-serif; color: var(--txt); user-select: none; }
+button { font-family: inherit; }
+
+#palco {
+  position: relative; overflow: hidden; background: #07060c;
+  width: min(100vw, 177.78vh); height: min(100vh, 56.25vw);
+  container-type: size;
+}
+#palco > div, #hud > * { position: absolute; }
+.oculto { display: none !important; }
+
+/* ---------------- fundo ---------------- */
+#fundo { inset: 0; z-index: 1; }
+#fundo .camada { position: absolute; inset: 0; transition: opacity .6s; }
+#fundo svg, #fundo img { width: 100%; height: 100%; display: block; object-fit: cover; }
+.ph-chuva { animation: chuva .55s linear infinite; }
+@keyframes chuva { to { transform: translate(-8px, 272px); } }
+.ph-raio.on { animation: raio 1.1s ease-out; }
+@keyframes raio { 0%, 30% { opacity: 0 } 8%, 40% { opacity: .85 } 100% { opacity: 0 } }
+.ph-monitor { animation: monitor 3s ease-in-out infinite; }
+@keyframes monitor { 50% { opacity: .8 } }
+
+/* ---------------- objetos clicáveis ---------------- */
+#objetos { inset: 0; } /* sem z-index: cada objeto se empilha com os personagens */
+.obj { position: absolute; z-index: 2; cursor: pointer; transition: filter .2s, transform .2s; }
+.obj.invisivel, .porta { z-index: 2; }
+.obj svg, .obj img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.obj img { filter: drop-shadow(0 .3cqw .4cqw #0008); }
+.obj.invisivel { border-radius: 1cqw; }
+.obj, .pers.clicavel { cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Ccircle cx='11' cy='11' r='7.5' fill='none' stroke='%23000' stroke-width='4'/%3E%3Ccircle cx='11' cy='11' r='7.5' fill='%23ffffff22' stroke='%23fff' stroke-width='2'/%3E%3Cpath d='M16.5 16.5 L25 25' stroke='%23000' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M16.5 16.5 L25 25' stroke='%23fff' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E") 11 11, pointer; }
+.obj:hover { filter: drop-shadow(0 0 .35cqw #ffffff70) brightness(1.1); }
+.obj.invisivel:hover { background: radial-gradient(closest-side, #ffffff14, transparent); }
+.obj.deco { pointer-events: none; cursor: default; }
+/* brilho raro e fraquinho em algo ainda não examinado */
+.obj.glint::after {
+  content: ""; position: absolute; width: 1.1cqw; height: 1.1cqw; left: 50%; top: 20%; pointer-events: none;
+  background: radial-gradient(circle, #fff 0 15%, #fff6 35%, transparent 70%); border-radius: 50%;
+  animation: glint 1.2s ease-in-out;
+}
+@keyframes glint { 0%, 100% { opacity: 0; transform: scale(.3) rotate(0deg) } 45% { opacity: .55; transform: scale(1) rotate(45deg) } }
+
+.porta { position: absolute; cursor: pointer; display: flex; align-items: center; }
+.porta .seta {
+  font: 700 3.2cqw/1 "Oswald"; color: #fff; opacity: .35; text-shadow: 0 0 1cqw #000;
+  transition: opacity .2s, transform .2s; margin: auto;
+}
+.porta:hover .seta { opacity: 1; transform: scale(1.15); }
+.porta.esq .seta::before { content: "‹"; } .porta.dir .seta::before { content: "›"; }
+.rotulo {
+  position: absolute; z-index: 30; pointer-events: none; white-space: nowrap;
+  background: var(--painel); border: 1px solid var(--borda); border-radius: .6cqw;
+  padding: .35cqw .8cqw; font: 800 1.05cqw "Nunito"; color: #fff; transform: translate(-50%, -120%);
+}
+
+/* ---------------- personagens ---------------- */
+#personagens { inset: 0; z-index: 3; pointer-events: none; }
+.pers {
+  position: absolute; bottom: 3%; width: 13.2cqw; height: 35cqw; transform: translateX(-50%);
+  transition-property: left; transition-timing-function: linear; pointer-events: none;
+}
+.pers .wrap { position: absolute; inset: 0; transform-origin: 50% 100%; }
+.pers .wrap.vira { transform: scaleX(-1); }
+.pers .wrap.vira .logo { transform: scaleX(-1); transform-box: fill-box; transform-origin: center; }
+.pers .respira { position: absolute; inset: 0; transform-origin: 50% 100%; animation: respira 3.6s ease-in-out infinite; }
+@keyframes respira { 50% { transform: scaleY(1.012) scaleX(.995); } }
+.pers .corpo { position: absolute; left: 0; top: 29%; width: 100%; height: 71%; }
+.pers .corpo svg { width: 100%; height: 100%; overflow: visible; }
+.pers .cabeca { position: absolute; left: 8%; top: 2.4%; width: 84%; aspect-ratio: 1; z-index: 2; transform-origin: 50% 90%; transition: transform .25s; }
+.pers .cabeca svg, .pers .cabeca img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.pers { transform-origin: 50% 100%; }
+/* só o desenho da pessoa é clicável (os vãos em volta deixam clicar nos objetos atrás) */
+.pers.clicavel { cursor: pointer; pointer-events: none; }
+.pers.clicavel .corpo svg *, .pers.clicavel .cabeca img, .pers.clicavel .cabeca svg *, .pers.clicavel .cadaver svg * { pointer-events: auto; }
+.pers.clicavel:hover .wrap { filter: drop-shadow(0 0 .6cqw #fff6) drop-shadow(0 0 1.2cqw #f4c95d88); }
+.pers .nome {
+  position: absolute; left: 50%; top: -2.4cqw; transform: translateX(-50%); white-space: nowrap;
+  font: 800 1.05cqw "Nunito"; background: var(--painel); border: 1px solid var(--borda);
+  border-radius: .6cqw; padding: .25cqw .7cqw; opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.pers.clicavel:hover .nome { opacity: 1; }
+.pers.falando .cabeca { animation: fala .32s ease-in-out infinite alternate; }
+@keyframes fala { to { transform: translateY(-1.5%) rotate(-1.2deg); } }
+.pers.entrou { animation: entra .45s ease-out; }
+@keyframes entra { from { opacity: 0; transform: translateX(-50%) translateY(2%); } }
+/* animações pontuais */
+.pers .wrap.a-tremer { animation: tremer .5s linear 2; }
+@keyframes tremer { 25% { translate: -.4cqw 0 } 75% { translate: .4cqw 0 } }
+.pers .wrap.a-pular { animation: pular .5s ease-out; }
+@keyframes pular { 30% { translate: 0 -8% } }
+.pers .wrap.a-recuar { animation: recuar .7s ease-out; }
+@keyframes recuar { 30% { scale: .96; translate: 0 1% } }
+.pers .wrap.a-olhar .cabeca { animation: olhar 1.3s ease-in-out; }
+@keyframes olhar { 20%, 35% { transform: rotate(-9deg) translateX(-6%) } 60%, 80% { transform: rotate(9deg) translateX(6%) } }
+/* morto / coberto */
+.pers.caido, .pers.coberto { width: 31cqw; height: 9.3cqw; }
+.pers.caido .wrap, .pers.coberto .wrap { transform: none !important; }
+.cadaver { position: absolute; inset: 0; }
+.cadaver svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.cab-morta { position: absolute; left: 6%; top: 33%; width: 19%; aspect-ratio: 1; transform: rotate(-78deg); }
+.cab-morta svg, .cab-morta img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.pers.coberto svg { width: 100%; height: 100%; }
+/* vulto (isca) */
+#vulto-camada { inset: 0; z-index: 6; pointer-events: none; }
+#vulto-camada .pers { filter: brightness(.18) saturate(.4) drop-shadow(0 0 .25cqw #8a7cff88); cursor: crosshair; pointer-events: none; }
+#vulto-camada.ativo { pointer-events: auto; cursor: crosshair; }
+
+/* ---------------- luz ---------------- */
+#luz { inset: 0; z-index: 5; pointer-events: none; transition: background .25s; }
+.luz-normal #luz { background: radial-gradient(120% 90% at 50% 40%, transparent 55%, rgba(0, 0, 10, .55) 100%); }
+/* apagão: usa a imagem "apagada" do cenário + um filtro preto por cima (ajuste a opacidade aqui) */
+.luz-apagada #luz { background: rgba(1, 1, 8, .72); transition: background .05s; }
+.luz-isca #luz { background: radial-gradient(45% 55% at 55% 30%, rgba(20, 30, 70, .2), rgba(2, 3, 12, .72) 75%); }
+/* cenário sem versão apagada (estúdio): escurece a própria imagem */
+.sem-fundo-escuro #fundo img { filter: brightness(.4) saturate(.6) hue-rotate(10deg); }
+.luz-apagada #objetos, .luz-isca #objetos { pointer-events: none; }
+
+/* ---------------- espiar (escondidos) ---------------- */
+#espiar { inset: 0; z-index: 7; pointer-events: none; opacity: 0; transition: opacity .8s; }
+.modo-espiar #espiar { opacity: 1; }
+#espiar i { position: absolute; background: #000; }
+#espiar .b1 { left: 0; right: 0; top: 0; height: 8%; } #espiar .b2 { left: 0; right: 0; bottom: 0; height: 8%; }
+#espiar .b3 { left: 0; top: 0; bottom: 0; width: 7%; background: linear-gradient(90deg, #000 60%, transparent); }
+#espiar .b4 { right: 0; top: 0; bottom: 0; width: 7%; background: linear-gradient(270deg, #000 60%, transparent); }
+#espiar::after { content: ""; position: absolute; inset: 0; background: radial-gradient(60% 65% at 50% 52%, transparent 55%, rgba(0, 0, 0, .75) 100%); }
+.modo-espiar #objetos, .modo-espiar .porta { pointer-events: none; }
+.modo-espiar .pers { pointer-events: none; }
+#alvos { inset: 0; z-index: 8; pointer-events: none; }
+.alvo {
+  position: absolute; pointer-events: auto; cursor: pointer; border-radius: 1.2cqw;
+  border: .18cqw dashed #ffffff55; animation: alvo 1.6s ease-in-out infinite; display: grid; place-items: end center;
+}
+.alvo span { margin-bottom: -2.6cqw; background: var(--painel); border: 1px solid var(--borda); border-radius: .6cqw; padding: .35cqw 1cqw; font: 900 1.2cqw "Nunito"; }
+@keyframes alvo { 50% { border-color: #f4c95daa; background: #f4c95d14; } }
+
+/* ---------------- HUD ---------------- */
+#hud { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
+#hud > * { pointer-events: auto; }
+#nomeSala {
+  left: 50%; bottom: 17%; transform: translateX(-50%); font: 700 2.4cqw "Oswald"; letter-spacing: .3cqw;
+  text-transform: uppercase; opacity: 0; pointer-events: none; text-shadow: 0 0 1.5cqw #000; transition: opacity .6s;
+}
+#nomeSala.on { opacity: .9; }
+#toasts { left: 50%; bottom: 17.5%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: .4cqw; pointer-events: none; }
+.toast {
+  background: var(--painel); border: 1px solid var(--borda); border-radius: 2cqw; padding: .35cqw 1.1cqw;
+  font: 800 1cqw "Nunito"; animation: toast 3.4s ease forwards; white-space: nowrap;
+}
+.toast b { color: var(--c, #fff); }
+@keyframes toast { 0% { opacity: 0; transform: translateY(.6cqw) } 10%, 80% { opacity: 1; transform: none } 100% { opacity: 0 } }
+
+#dlg {
+  left: 50%; bottom: 3.2%; transform: translateX(-50%); width: 62cqw; min-height: 8.4cqw;
+  background: var(--painel); border: 1px solid var(--borda); border-radius: 1.2cqw;
+  padding: 1.5cqw 2.2cqw 1.6cqw 10.2cqw; cursor: pointer; box-shadow: 0 1cqw 3cqw #0009;
+  animation: dlgIn .25s ease;
+}
+@keyframes dlgIn { from { opacity: 0; transform: translateX(-50%) translateY(.8cqw); } }
+#dlg .retrato { position: absolute; left: .8cqw; bottom: .9cqw; width: 8.4cqw; height: 8.4cqw; }
+#dlg .retrato svg, #dlg .retrato img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 .3cqw .6cqw #000a); }
+#dlg .placa {
+  position: absolute; left: 9.6cqw; top: -1.6cqw; background: var(--c, #fff); color: #0b0a14;
+  font: 700 1.35cqw "Oswald"; letter-spacing: .08cqw; text-transform: uppercase; padding: .2cqw 1cqw; border-radius: .5cqw;
+}
+#dlg .texto { font: 800 1.55cqw/1.4 "Nunito"; min-height: 4.4cqw; }
+#dlg .seta { position: absolute; right: 1.2cqw; bottom: .8cqw; font-size: 1cqw; opacity: 0; animation: seta 1s infinite; }
+#dlg.pronto .seta { opacity: .8; }
+@keyframes seta { 50% { transform: translateY(.3cqw); } }
+#dlg.narra { padding-left: 2.6cqw; text-align: center; }
+#dlg.narra .texto { font-style: italic; color: #d9d2f5; }
+#dlg.narra .retrato, #dlg.narra .placa { display: none; }
+
+#escolhas { left: 50%; bottom: 15.5%; transform: translateX(-50%); display: flex; gap: 1cqw; }
+#escolhas button, #menu button, .btn {
+  background: #1c1830; color: #fff; border: 1px solid #ffffff2a; border-radius: .8cqw;
+  font: 800 1.3cqw "Nunito"; padding: .8cqw 1.6cqw; cursor: pointer; transition: transform .15s, background .15s;
+}
+#escolhas button:hover, #menu button:hover, .btn:hover { background: #2d2650; transform: translateY(-.15cqw); }
+#escolhas button.destaque { background: var(--vermelho); border-color: #fff6; font-family: "Oswald"; letter-spacing: .1cqw; }
+
+#menu {
+  left: 50%; bottom: 3.2%; transform: translateX(-50%); width: 62cqw; background: var(--painel);
+  border: 1px solid var(--borda); border-radius: 1.2cqw; padding: 1.4cqw 2cqw 1.4cqw 10.2cqw; animation: dlgIn .25s ease;
+}
+#menu .retrato { position: absolute; left: .8cqw; bottom: .9cqw; width: 8.4cqw; height: 8.4cqw; }
+#menu .retrato svg, #menu .retrato img { width: 100%; height: 100%; object-fit: contain; }
+#menu .placa { position: absolute; left: 9.6cqw; top: -1.6cqw; background: var(--c, #fff); color: #0b0a14; font: 700 1.35cqw "Oswald"; text-transform: uppercase; padding: .2cqw 1cqw; border-radius: .5cqw; }
+#menu .lista { display: flex; flex-wrap: wrap; gap: .7cqw; }
+#menu button { font-size: 1.15cqw; padding: .6cqw 1.2cqw; }
+#menu button.visto { color: var(--apagado); }
+#menu button.sair { background: transparent; }
+
+#btnPistas {
+  right: 2cqw; bottom: 3.4%; height: 5.4cqw; padding: 0 1.4cqw; border-radius: 1cqw; cursor: pointer;
+  background: var(--painel); border: 1px solid var(--borda); color: #fff; display: flex; align-items: center; gap: .6cqw;
+  font: 700 1.8cqw "Oswald";
+}
+#btnPistas .ic { font-size: 2cqw; }
+#btnPistas:hover { background: #241e3e; }
+#btnPistas.pulsa { animation: pulsa 1.2s infinite; border-color: var(--ouro); }
+@keyframes pulsa { 50% { box-shadow: 0 0 0 .6cqw #f4c95d33, 0 0 2cqw #f4c95d88; } }
+#btnPistas.pop { animation: pop .5s; }
+@keyframes pop { 40% { transform: scale(1.18); } }
+#btnSom { position: absolute; z-index: 46; left: 1.6cqw; bottom: 3.4%; width: 3.4cqw; height: 3.4cqw; border-radius: 50%; background: var(--painel); border: 1px solid var(--borda); color: #fff; font-size: 1.4cqw; cursor: pointer; opacity: .55; }
+#btnSom:hover, #btnSom.aberto { opacity: 1; }
+#painelSom { position: absolute; z-index: 46; left: 1.6cqw; bottom: calc(3.4% + 4.2cqw); width: 22cqw; background: rgba(12, 10, 24, .96);
+  border: 1px solid var(--borda); border-radius: 1cqw; padding: 1.1cqw 1.3cqw; display: flex; flex-direction: column; gap: .9cqw; box-shadow: 0 1cqw 2.4cqw #000a; animation: dicaIn .2s ease; }
+#painelSom .linha { display: grid; grid-template-columns: 1fr 3.2cqw; grid-template-rows: auto auto; gap: .3cqw .6cqw; align-items: center; }
+#painelSom .linha span { grid-column: 1 / 3; font: 800 1cqw "Nunito"; color: #d9d2f5; }
+#painelSom .linha b { font: 800 .95cqw "Nunito"; color: var(--apagado); text-align: right; }
+#painelSom input[type=range] { width: 100%; accent-color: var(--azul); cursor: pointer; height: 1.2cqw; }
+#painelSom .mudo { background: #1c1830; color: #fff; border: 1px solid #ffffff2a; border-radius: .6cqw; font: 800 .95cqw "Nunito"; padding: .45cqw .8cqw; cursor: pointer; }
+#painelSom .mudo:hover { background: #2d2650; }
+#painelSom .mudo.on { background: var(--vermelho); }
+#assistindo { left: 6cqw; bottom: 3.6%; font: 800 1cqw "Nunito"; color: var(--apagado); display: flex; gap: .5cqw; align-items: center; }
+#assistindo button { font-size: .9cqw; padding: .3cqw .7cqw; }
+
+/* ---------------- painel de pistas ---------------- */
+#painel {
+  left: 50%; top: 12%; transform: translateX(-50%); width: 60cqw; height: 74%; z-index: 20;
+  background: rgba(12, 10, 24, .96); border: 1px solid var(--borda); border-radius: 1.4cqw; padding: 1.6cqw 2cqw;
+  display: flex; flex-direction: column; gap: 1cqw; box-shadow: 0 2cqw 5cqw #000c; animation: dlgIn .25s;
+}
+#painel h2 { margin: 0; font: 700 2.2cqw "Oswald"; letter-spacing: .15cqw; display: flex; align-items: center; gap: 1cqw; }
+#painel h2 small { font: 800 1cqw "Nunito"; color: var(--apagado); letter-spacing: 0; }
+#painel .grade { display: grid; grid-template-columns: repeat(8, 1fr); gap: .8cqw; overflow: auto; }
+.carta {
+  background: #1c1830; border: .15cqw solid #ffffff1a; border-radius: .8cqw; padding: .6cqw; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: .3cqw; text-align: center; transition: transform .15s, border-color .15s;
+}
+.carta:hover { transform: translateY(-.2cqw); border-color: #ffffff55; }
+.carta .ic { width: 3.8cqw; height: 3.8cqw; } .carta .ic svg, .carta .ic img { width: 100%; height: 100%; object-fit: contain; }
+.carta .nm { font: 800 .85cqw/1.15 "Nunito"; }
+.carta.sel { border-color: var(--ouro); box-shadow: 0 0 1.2cqw #f4c95d55; }
+.carta.vazia { opacity: .25; cursor: default; }
+.carta.vazia:hover { transform: none; }
+#painel .detalhe { margin-top: auto; background: #00000055; border-radius: 1cqw; padding: 1.1cqw 1.4cqw; min-height: 6.5cqw; display: flex; gap: 1.2cqw; align-items: center; }
+#painel .detalhe .ic { width: 6cqw; height: 6cqw; flex: none; } #painel .detalhe .ic svg, #painel .detalhe .ic img { width: 100%; height: 100%; object-fit: contain; }
+#painel .detalhe b { font: 700 1.5cqw "Oswald"; display: block; margin-bottom: .3cqw; }
+#painel .detalhe p { margin: 0; font: 700 1.2cqw/1.4 "Nunito"; color: #d9d2f5; }
+#painel .barra { display: flex; gap: .8cqw; justify-content: flex-end; align-items: center; }
+#painel .barra .dica { margin-right: auto; font: 800 1.05cqw "Nunito"; color: var(--ouro); }
+#painel .btn.ligar { background: #3a2a10; border-color: var(--ouro); }
+#painel .btn.ligar.on { background: var(--ouro); color: #1a1408; }
+
+/* ---------------- dedução ---------------- */
+#deducao {
+  left: 50%; top: 12%; transform: translateX(-50%); width: 62cqw; height: 76%; z-index: 21;
+  background: radial-gradient(120% 100% at 50% 0%, #2a0f1a, #0c0a16 70%); border: 1px solid #ff4d5e55;
+  border-radius: 1.4cqw; padding: 1.8cqw 2.4cqw; display: flex; flex-direction: column; gap: 1.2cqw; box-shadow: 0 2cqw 5cqw #000c;
+}
+#deducao .topo { display: flex; justify-content: space-between; align-items: baseline; }
+#deducao h2 { margin: 0; font: 700 3cqw "Oswald"; letter-spacing: .25cqw; color: var(--vermelho); }
+#deducao .passos { display: flex; gap: .6cqw; }
+#deducao .passos i { width: 2.4cqw; height: .5cqw; border-radius: 1cqw; background: #ffffff22; }
+#deducao .passos i.ok { background: var(--vermelho); } #deducao .passos i.at { background: #fff; }
+#deducao .perg { font: 700 2.2cqw "Oswald"; }
+#deducao .ops { display: grid; gap: 1cqw; flex: 1; align-content: start; }
+#deducao .ops.sus { grid-template-columns: repeat(6, 1fr); }
+#deducao .ops.txt { grid-template-columns: 1fr 1fr; }
+#deducao .ops.pis { grid-template-columns: repeat(7, 1fr); }
+#deducao .ops.sus .op .ic { width: 5.6cqw; height: 5.6cqw; }
+.op {
+  position: relative; background: #1c1830; border: .18cqw solid #ffffff1a; border-radius: 1cqw; padding: 1cqw; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: .5cqw; text-align: center; transition: transform .15s, border-color .15s;
+  font: 800 1.25cqw/1.35 "Nunito";
+}
+.op:hover { transform: translateY(-.2cqw); border-color: #ffffff55; }
+.op .ic { width: 7cqw; height: 7cqw; } .op .ic svg, .op .ic img { width: 100%; height: 100%; object-fit: contain; }
+.ops.pis .op .ic { width: 4.6cqw; height: 4.6cqw; }
+.ops.txt .op { text-align: left; align-items: flex-start; padding: 1.3cqw 1.5cqw; }
+.op .votos { position: absolute; top: .5cqw; right: .5cqw; display: flex; gap: .3cqw; }
+.op .votos i { width: 1.3cqw; height: 1.3cqw; border-radius: 50%; border: .15cqw solid #fff; }
+.op.meu { border-color: var(--c); }
+#deducao .rodape { font: 800 1.1cqw "Nunito"; color: var(--apagado); text-align: center; }
+
+/* ---------------- cartões de cena ---------------- */
+#relogio { left: 50%; bottom: 4%; transform: translateX(-50%); width: 60cqw; z-index: 15; background: var(--painel); border: 1px solid #ffffff22; border-left: .5cqw solid var(--vermelho); border-radius: 1cqw; padding: 1.2cqw 2cqw; cursor: pointer; display: grid; grid-template-columns: auto 1fr; gap: 0 1.8cqw; align-items: center; animation: dlgIn .3s; }
+#relogio .hora { font: 700 4.6cqw "Oswald"; color: var(--vermelho); grid-row: span 2; }
+#relogio .txt { font: 800 1.45cqw/1.4 "Nunito"; }
+#relogio .dica { font: 800 .85cqw "Nunito"; color: var(--apagado); }
+#titulo { inset: 0; z-index: 16; display: grid; place-content: center; text-align: center; pointer-events: none; background: radial-gradient(closest-side, #000a, transparent); animation: tituloIn 2.6s ease both; }
+#titulo .t { font: 700 7cqw/1 "Oswald"; letter-spacing: .8cqw; text-shadow: 0 0 3cqw #ff4d5e88; }
+#titulo .s { font: 800 1.8cqw "Nunito"; color: #d9d2f5; margin-top: 1cqw; }
+@keyframes tituloIn { 0% { opacity: 0; letter-spacing: 2cqw } 25% { opacity: 1 } 80% { opacity: 1 } 100% { opacity: .9 } }
+#transicao { inset: 0; z-index: 18; background: #000; opacity: 0; pointer-events: none; transition: opacity .45s; display: grid; place-items: center; }
+#transicao.on { opacity: 1; }
+#transicao .txt { font: 700 4cqw "Oswald"; letter-spacing: .5cqw; color: #d9d2f5; }
+#flash { inset: 0; z-index: 19; background: #fff; opacity: 0; pointer-events: none; }
+#flash.on { animation: flash .6s ease-out; }
+@keyframes flash { 0% { opacity: .95 } 100% { opacity: 0 } }
+#foto { left: 50%; bottom: 7%; z-index: 19; transform: translateX(-50%) rotate(-3deg); background: #f3efe0; padding: .8cqw .8cqw 2.4cqw; box-shadow: 0 1cqw 3cqw #000c; animation: fotoIn .35s ease; text-align: center; }
+#foto svg { width: 22cqw; display: block; }
+#foto p { margin: .5cqw 0 0; font: 800 1.1cqw "Nunito"; color: #222; max-width: 22cqw; }
+@keyframes fotoIn { from { transform: translateX(-50%) rotate(10deg) scale(.6); opacity: 0; } }
+#novaPista { left: 50%; top: 36%; transform: translate(-50%, -50%); z-index: 17; pointer-events: none; text-align: center; animation: novaPista 2.4s ease forwards; }
+#novaPista .ic { width: 9cqw; height: 9cqw; margin: 0 auto; filter: drop-shadow(0 0 2cqw #f4c95d88); }
+#novaPista .ic svg, #novaPista .ic img { width: 100%; height: 100%; object-fit: contain; }
+#novaPista small { display: block; font: 700 1.1cqw "Oswald"; letter-spacing: .4cqw; color: var(--ouro); }
+#novaPista b { font: 700 2.2cqw "Oswald"; text-shadow: 0 0 1cqw #000; }
+@keyframes novaPista { 0% { opacity: 0; transform: translate(-50%, -40%) scale(.8) } 15%, 75% { opacity: 1; transform: translate(-50%, -50%) } 100% { opacity: 0; transform: translate(40%, 120%) scale(.3) } }
+
+/* ---------------- cursores ---------------- */
+#cursores { inset: 0; z-index: 30; pointer-events: none; }
+.cur { position: absolute; width: 1.6cqw; transition: left .1s linear, top .1s linear; }
+.cur svg { width: 1.6cqw; display: block; filter: drop-shadow(0 .1cqw .2cqw #000); }
+.cur span { position: absolute; left: 1.4cqw; top: 1.2cqw; font: 900 .85cqw "Nunito"; background: var(--c); color: #0b0a14; padding: .1cqw .5cqw; border-radius: .4cqw; white-space: nowrap; }
+
+/* ---------------- lobby ---------------- */
+#lobby { inset: 0; z-index: 40; background: radial-gradient(100% 80% at 50% 10%, #2a1736 0%, #0b0915 60%, #050409 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.2cqw; }
+#lobby .logo { font: 700 9cqw/0.9 "Oswald"; letter-spacing: 1.2cqw; text-shadow: 0 0 4cqw #ff4d5e66; margin-top: 4cqw; }
+#lobby .sub { font: 800 1.5cqw "Nunito"; color: #cfc6ef; margin-top: -1cqw; }
+#lobby .vagas { display: flex; gap: 3cqw; }
+.vaga { width: 24cqw; background: #14111f; border: .2cqw solid #ffffff1a; border-radius: 1.4cqw; padding: 1.6cqw; display: flex; flex-direction: column; align-items: center; gap: .9cqw; }
+.vaga.minha { border-color: var(--c); box-shadow: 0 0 2.4cqw color-mix(in srgb, var(--c) 35%, transparent); }
+.vaga .rosto { width: 9cqw; height: 9cqw; } .vaga .rosto svg, .vaga .rosto img { width: 100%; height: 100%; object-fit: contain; }
+.vaga h3 { margin: 0; font: 700 2.2cqw "Oswald"; color: var(--c); letter-spacing: .1cqw; }
+.vaga .st { font: 800 1.05cqw "Nunito"; color: var(--apagado); min-height: 1.4cqw; }
+.vaga .st.on { color: #6dff9c; }
+.vaga input { width: 100%; background: #0b0915; border: 1px solid #ffffff2a; border-radius: .7cqw; color: #fff; font: 800 1.2cqw "Nunito"; padding: .6cqw .9cqw; text-align: center; }
+.btn.grande { font: 700 2cqw "Oswald"; letter-spacing: .2cqw; padding: 1cqw 3cqw; background: var(--vermelho); border-color: #fff5; }
+.btn.grande[disabled] { opacity: .35; cursor: default; transform: none; }
+#lobby .rodape { display: flex; gap: 1.6cqw; font: 800 .95cqw "Nunito"; color: #7d769a; align-items: center; }
+#lobby .rodape a { color: #a49fbd; cursor: pointer; text-decoration: underline; }
+
+/* ---------------- fim ---------------- */
+#fimTela { inset: 0; z-index: 40; background: radial-gradient(100% 80% at 50% 20%, #2a0f1a, #050409 70%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.6cqw; animation: dlgIn .8s; }
+#fimTela h1 { margin: 0; font: 700 7cqw "Oswald"; letter-spacing: .8cqw; color: var(--vermelho); }
+#fimTela .stats { display: flex; gap: 3cqw; }
+#fimTela .stats div { text-align: center; } #fimTela .stats b { display: block; font: 700 3.4cqw "Oswald"; } #fimTela .stats span { font: 800 1.1cqw "Nunito"; color: var(--apagado); }
+
+#carregando { inset: 0; z-index: 50; display: grid; place-items: center; background: #050409; font: 700 2cqw "Oswald"; letter-spacing: .3cqw; color: #7d769a; }
+
+/* contador de fotos na isca */
+#fotosRest { left: 50%; bottom: 4%; transform: translateX(-50%); z-index: 12; display: flex; gap: .8cqw; align-items: center; font: 800 1.1cqw "Nunito"; color: #d9d2f5; background: #0008; border-radius: 2cqw; padding: .5cqw 1.4cqw; pointer-events: none; }
+#fotosRest i { width: 1.1cqw; height: 1.1cqw; border-radius: 50%; background: #fff; box-shadow: 0 0 .8cqw #fff; }
+#fotosRest i.usada { background: #ffffff22; box-shadow: none; }
+
+/* ---------------- andar e gestos ---------------- */
+.pers svg .pe, .pers svg .pd, .fig svg .pe, .fig svg .pd { transform-box: fill-box; transform-origin: 50% 0; }
+.pers svg .bE, .pers svg .bD, .fig svg .bE, .fig svg .bD { transform-box: fill-box; }
+.pers svg .bE { transform-origin: 85% 5%; } .pers svg .bD { transform-origin: 15% 5%; }
+.pers.andando .pe { animation: passoA .52s ease-in-out infinite; }
+.pers.andando .pd { animation: passoB .52s ease-in-out infinite; }
+.pers.andando .respira { animation: anda-bob .26s ease-in-out infinite alternate; }
+.pers.andando.p-neutro .bE { animation: passoB .52s ease-in-out infinite; }
+.pers.andando.p-neutro .bD { animation: passoA .52s ease-in-out infinite; }
+#vulto-camada .pers.andando .pe { animation: passoA .52s ease-in-out infinite; }
+#vulto-camada .pers.andando .pd { animation: passoB .52s ease-in-out infinite; }
+@keyframes passoA { 0%, 100% { transform: rotate(16deg); } 50% { transform: rotate(-16deg); } }
+@keyframes passoB { 0%, 100% { transform: rotate(-16deg); } 50% { transform: rotate(16deg); } }
+@keyframes anda-bob { from { transform: translateY(0); } to { transform: translateY(-1.6%); } }
+.pers svg .bD.coca { transform-origin: 22% 87%; animation: coca .28s ease-in-out infinite alternate; }
+@keyframes coca { from { transform: rotate(-5deg); } to { transform: rotate(6deg); } }
+.pers svg .bD.escreve, .fig svg .bD.escreve { animation: escreve .5s ease-in-out infinite alternate; }
+@keyframes escreve { from { transform: translate(0, 0); } to { transform: translate(-5px, 3px); } }
+.pers .wrap.a-pe .pd { animation: bate-pe .35s ease-in-out 4; }
+@keyframes bate-pe { 50% { transform: rotate(-9deg) translateY(-2%); } }
+.pers .wrap.a-suspiro .respira { animation: suspiro 1.4s ease-in-out; }
+@keyframes suspiro { 40% { transform: scaleY(1.035); } 75% { transform: scaleY(.985); } }
+.pers .wrap.a-alto .respira { animation: alto 1.6s ease-in-out; }
+@keyframes alto { 40% { transform: scaleY(1.04) scaleX(.985); } }
+
+/* ---------------- bustos (retratos grandes / pessoa em conversa) ---------------- */
+#bustos { inset: 0; z-index: 9; pointer-events: none; }
+#bustos::before { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(5, 4, 12, .8), rgba(5, 4, 12, .35) 55%, rgba(5, 4, 12, .1)); opacity: 0; transition: opacity .35s; }
+#bustos.foco::before { opacity: 1; }
+.busto { position: absolute; bottom: 0; height: 62cqh; aspect-ratio: 2 / 3; overflow: hidden; opacity: 0; transition: transform .35s ease, opacity .3s, filter .25s; }
+.busto.esq { left: .5cqw; transform: translateX(-110%); }
+.busto.dir { right: .5cqw; transform: translateX(110%); }
+.busto.centro { left: 50%; height: 68cqh; transform: translate(-50%, 25%); }
+.busto.on { opacity: 1; transform: none; }
+.busto.centro.on { transform: translateX(-50%); }
+.busto.apagado { filter: brightness(.5) saturate(.6); }
+.busto .fig { position: absolute; left: 0; top: 0; width: 100%; height: 166.7%; }
+.fig .wrap { position: absolute; inset: 0; transform-origin: 50% 100%; }
+.fig .wrap.vira { transform: scaleX(-1); }
+.fig .wrap.vira .logo { transform: scaleX(-1); transform-box: fill-box; transform-origin: center; }
+.fig .respira { position: absolute; inset: 0; transform-origin: 50% 60%; animation: respira 3.6s ease-in-out infinite; }
+.fig .corpo { position: absolute; left: 0; top: 30%; width: 100%; height: 70%; }
+.fig .corpo svg { width: 100%; height: 100%; overflow: visible; }
+.fig .cabeca { position: absolute; left: 8%; top: 2.2%; width: 84%; aspect-ratio: 1; transform-origin: 50% 90%; }
+.fig .cabeca svg, .fig .cabeca img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.busto.fala .cabeca { animation: fala .32s ease-in-out infinite alternate; }
+#dlg.semRetrato { padding-left: 2.6cqw; }
+#dlg.semRetrato .retrato { display: none; }
+#dlg.semRetrato .placa { left: 1.6cqw; }
+#dlg .voltar {
+  position: absolute; right: 1.2cqw; top: -1.5cqw; background: #1c1830; color: #d9d2f5; border: 1px solid #ffffff2a;
+  border-radius: .5cqw; font: 800 .95cqw "Nunito"; padding: .2cqw .8cqw; cursor: pointer; opacity: .75;
+}
+#dlg .voltar:hover { opacity: 1; background: #2d2650; }
+#menu { padding-left: 2.2cqw; }
+#menu .placa { left: 1.6cqw; }
+
+/* ---------------- dicas rápidas ---------------- */
+#dica { z-index: 11; max-width: 30cqw; background: rgba(14, 12, 26, .92); border: 1px solid #ffffff30; border-radius: 1cqw;
+  padding: .7cqw 1.2cqw; font: 800 1.1cqw/1.35 "Nunito"; color: #f1eefb; pointer-events: none; animation: dicaIn .35s ease; box-shadow: 0 .6cqw 1.6cqw #0008; }
+#dica::before { content: "💡 "; }
+@keyframes dicaIn { from { opacity: 0; transform: translateY(.5cqw); } }
+#dica.dica-centro { left: 50%; bottom: 20%; transform: translateX(-50%); animation: none; }
+#dica.dica-pistas { right: 2cqw; bottom: 14%; }
+#dica.dica-esq { left: 11cqw; top: 50%; }
+#dica.dica-dir { right: 11cqw; top: 50%; }
+
+/* nova pista: discreto, perto do botão */
+#novaPista { left: auto; top: auto; right: 2cqw; bottom: 13.5%; transform: none; display: flex; align-items: center; gap: .8cqw;
+  background: rgba(14, 12, 26, .92); border: 1px solid #ffffff26; border-radius: 1cqw; padding: .6cqw 1.2cqw .6cqw .7cqw; text-align: left; animation: novaPista2 2.4s ease forwards; }
+#novaPista .ic { width: 3.4cqw !important; height: 3.4cqw !important; margin: 0 !important; filter: none !important; }
+#novaPista small { font: 800 .8cqw "Nunito" !important; letter-spacing: .05cqw !important; color: var(--apagado) !important; }
+#novaPista b { font: 700 1.3cqw "Oswald" !important; text-shadow: none !important; }
+@keyframes novaPista2 { 0% { opacity: 0; transform: translateX(1.5cqw); } 12%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+.pers { transition-property: left, opacity; }
+.pers.embusto { opacity: 0; transition-duration: .25s !important; }
+
+/* chuva nas janelas + clarão do relâmpago */
+#chuva { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+#relampago { position: absolute; inset: 0; z-index: 6; pointer-events: none; background: radial-gradient(80% 70% at 50% 25%, rgba(200,215,255,.16), transparent 70%); opacity: 0; }
+#relampago.on { animation: relampago 1.1s ease-out; }
+@keyframes relampago { 0% { opacity: 0 } 6% { opacity: 1 } 14% { opacity: .1 } 22% { opacity: .8 } 100% { opacity: 0 } }
+
+/* close-up: objeto tirado do cenário e segurado na frente da tela */
+#examinar { position: absolute; z-index: 9; left: 50%; top: 42%; width: 34cqw; pointer-events: none; opacity: 0;
+  transform: translate(-50%, -50%) scale(.2) rotate(-10deg);
+  transition: left .55s cubic-bezier(.2,.9,.3,1.15), top .55s cubic-bezier(.2,.9,.3,1.15), transform .55s cubic-bezier(.2,.9,.3,1.15), opacity .3s; }
+#examinar img { width: 100%; display: block; filter: drop-shadow(0 2cqw 2.4cqw #000c); }
+#examinar.aberto { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-3deg); animation: segura 3.2s ease-in-out .6s infinite; }
+@keyframes segura { 50% { translate: 0 -.5cqw; rotate: .6deg; } }
+
+/* tela do computador ligada: brilho e um leve tremor de luz */
+.obj.deco[data-id^="tela_pc"] { filter: drop-shadow(0 0 .8cqw #5aa0ff) drop-shadow(0 0 2.4cqw #3a7cffaa); animation: telaLiga .5s ease-out, telaPisca 4s ease-in-out .5s infinite; border-radius: .2cqw; overflow: hidden; }
+@keyframes telaLiga { 0% { opacity: 0; transform: scaleY(.02); } 40% { opacity: 1; transform: scaleY(.02); } 100% { transform: scaleY(1); } }
+@keyframes telaPisca { 50% { opacity: .92; } 52% { opacity: .8; } 54% { opacity: .95; } }
+.cab-morta img { filter: saturate(.55) brightness(.82); }
