@@ -29,6 +29,37 @@
     }
     return `<img src="${src}" alt="">`;
   }
+  // Pré-carrega e já decodifica TODAS as imagens do jogo (rostos, cenários, objetos)
+  // logo ao abrir a página. Assim, trocar de expressão ou de cômodo é instantâneo
+  // (sem aquele atraso de alguns milissegundos antes do rosto aparecer).
+  const PRE = (window._preCarregadas = []);
+  function preCarregar(src) {
+    if (!src || PRE.some((im) => im._src === src)) return;
+    const im = new Image(); im._src = src; im.decoding = "async"; im.src = src;
+    if (im.decode) im.decode().catch(() => {});
+    PRE.push(im);
+  }
+  (function preCarregarTudo() {
+    for (const id in PERS) { const r = PERS[id].rosto || {}; for (const e in r) preCarregar(r[e]); }
+    for (const k in (window.CENARIOS || {})) {
+      const C = window.CENARIOS[k]; preCarregar(C.fundo); preCarregar(C.fundoApagado);
+      for (const o of C.objetos || []) preCarregar(o.img);
+    }
+    for (const k in (window.CLOSEUPS || {})) preCarregar(window.CLOSEUPS[k].img);
+    for (const k in (window.PISTAS || {})) preCarregar(window.PISTAS[k].img);
+  })();
+  // Troca o rosto sem "piscar": se a imagem nova ainda não estiver pronta,
+  // mantém a antiga na tela até a nova carregar.
+  function porRosto(el, id, exp, naCabeca) {
+    const html = rostoHTML(id, exp, naCabeca);
+    if (el._rosto === html) return;
+    el._rosto = html;
+    const tmp = document.createElement("div"); tmp.innerHTML = html;
+    const img = tmp.querySelector("img");
+    const trocar = () => { if (el._rosto === html) el.replaceChildren(...tmp.childNodes); };
+    if (!img || img.complete || !el.firstChild) { trocar(); return; }
+    img.onload = img.onerror = trocar;
+  }
   // "auto": procura sozinho as fotos que faltam (ex.: delegada_neutro.png, jazzghost_morto.png)
   (function procurarRostos() {
     const EXPS = ["neutro", "feliz", "preocupado", "assustado", "bravo", "morto"];
@@ -167,7 +198,7 @@
       const pose = (R.poseTemp && p.pose === "neutro" && falandoId !== id) ? R.poseTemp : p.pose;
       if (R.pose !== pose) { desenharCorpo(R, id, pose); R.pose = pose; }
       const cab = R.el.querySelector(".cabeca");
-      if (cab && R.exp !== p.exp) { cab.innerHTML = rostoHTML(id, p.exp, true); R.exp = p.exp; }
+      if (cab && R.exp !== p.exp) { porRosto(cab, id, p.exp, true); R.exp = p.exp; }
       const wrap = R.el.querySelector(".wrap");
       wrap.classList.toggle("vira", p.olha === -1 && p.pose !== "caido" && p.pose !== "coberto");
       const clicavel = !S.seq && S.fase === "jogo" && !!window.TOPICOS[id] && S.modo !== "espiar" && S.luz === "normal";
@@ -232,7 +263,7 @@
     if (B.key !== key) {
       B.key = key;
       B.el.querySelector(".corpo").innerHTML = window.PH.corpo(P.cor || "#888", pose, P.roupa, P.pele, P.quepe ? "farda" : "");
-      B.el.querySelector(".cabeca").innerHTML = rostoHTML(id, p.exp || "neutro", true);
+      porRosto(B.el.querySelector(".cabeca"), id, p.exp || "neutro", true);
     }
     B.el.querySelector(".wrap").classList.toggle("vira", !!vira);
   }
@@ -347,7 +378,7 @@
     const quem = c.fala;
     if (quem) {
       const P = PERS[quem] || {};
-      d.querySelector(".retrato").innerHTML = rostoHTML(quem, c.exp || "neutro");
+      porRosto(d.querySelector(".retrato"), quem, c.exp || "neutro");
       const pl = d.querySelector(".placa"); pl.textContent = P.nome || quem;
       d.style.setProperty("--c", C.coresJogador[quem] || P.cor || "#fff");
     }

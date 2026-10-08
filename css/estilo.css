@@ -82,7 +82,7 @@ button { font-family: inherit; }
 .pers { transform-origin: 50% 100%; }
 /* só o desenho da pessoa é clicável (os vãos em volta deixam clicar nos objetos atrás) */
 .pers.clicavel { cursor: pointer; pointer-events: none; }
-.pers.clicavel .corpo svg *, .pers.clicavel .cabeca img, .pers.clicavel .cabeca svg *, .pers.clicavel .cadaver svg * { pointer-events: auto; }
+.pers.clicavel .corpo svg *, .pers.clicavel .cabeca img, .pers.clicavel .cabeca svg * { pointer-events: auto; }
 .pers.clicavel:hover .wrap { filter: drop-shadow(0 0 .6cqw #fff6) drop-shadow(0 0 1.2cqw #f4c95d88); }
 .pers .nome {
   position: absolute; left: 50%; top: -2.4cqw; transform: translateX(-50%); white-space: nowrap;
